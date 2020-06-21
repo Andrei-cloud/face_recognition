@@ -156,34 +156,36 @@ print('Encoding complete')
 cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-cycle = 0
+cycle = 1
 while True:
     success, img = cap.read()
+    img = cv2.flip(img, +1)
     imgS = cv2.resize(img, (0,0), None, 0.25, 0.25, )
     facelocs = face_detection(img)
     if cycle == every:
         cycle = 0
     else:
         cycle += 1
+    name = ''
 
     for face in facelocs:
         #print(face)
+        is_match= []
         if len(face) >0:
             x,y,w,h = face
-            if cycle == 1:
-                #img = im_align(img)
-                extracted = extract_face_from_image([img], [face])
-                im_show(extracted[0], 'Face', 1)
-                score = get_model_scores(extracted, model)
-                distances = [cosine(score, x) for x in model_scores]
-                is_match = [x <= tolerance for x in distances]
-                #print(is_match)
-                match = np.argmin(distances)
-            #print(names[match].upper(), distances[match])
+
+            #img = im_align(img)
+            extracted = extract_face_from_image([img], [face])
+            #im_show(extracted[0], 'Face', 1)
+            score = get_model_scores(extracted, model)
+            distances = [cosine(score, x) for x in model_scores]
+            is_match = [x <= tolerance for x in distances]
+            #print(is_match)
+            match = np.argmin(distances)
+            name = names[match].upper()
         
             x2, y2 = x+w, y+h
             if is_match[match]:
-                name = names[match].upper()
                 cv2.rectangle(img, (x-5,y-5), (x2+5,y2+5), (0,200,0), 2)
                 cv2.rectangle(img, (x-5,y2),(x2+5,y2+35), (0,200,0), cv2.FILLED)
                 cv2.putText(img, name, (x+6,y2+28), cv2.FONT_HERSHEY_COMPLEX, 1, (255,255,255), 1)
